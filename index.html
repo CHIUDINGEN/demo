@@ -34,6 +34,15 @@
     .project{background:#fff;padding:14px;border-radius:10px;transition:transform .18s ease,box-shadow .18s ease;cursor:pointer}
     .project:hover{transform:translateY(-6px);box-shadow:0 18px 30px rgba(16,24,40,.12)}
     .project img{width:100%;height:120px;object-fit:cover;border-radius:8px}
+    .project img{cursor:pointer}
+
+    /* Lightbox / modal */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s ease;z-index:200}
+    .lightbox.open{opacity:1;visibility:visible}
+    .lightbox-content{max-width:90%;max-height:90%;background:transparent;border-radius:8px;display:flex;flex-direction:column;align-items:center}
+    .lightbox-content img{max-width:100%;max-height:80vh;border-radius:8px;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+    .lightbox-caption{color:#fff;margin-top:10px;text-align:center;max-width:90%;}
+    .lightbox-close{position:absolute;right:20px;top:20px;background:transparent;border:0;color:#fff;font-size:32px;cursor:pointer}
     footer{max-width:1000px;margin:28px auto;padding:0 20px;color:var(--muted)}
     /* small screens */
     @media (max-width:600px){
@@ -168,6 +177,15 @@
     <div style="max-width:1000px;margin:0 auto;padding:0 20px 28px 20px">© 2025 邱鼎恩 • <a href="mailto:glaciernnn@gmail.com">glaciernnn@gmail.com</a> • IG: <a href="https://instagram.com/nx1ic" target="_blank" rel="noreferrer">nx1ic</a></div>
   </footer>
 
+  <!-- Lightbox modal -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <div class="lightbox-content" role="dialog" aria-modal="true">
+      <button class="lightbox-close" aria-label="Close">×</button>
+      <img id="lightbox-img" src="" alt="">
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+  </div>
+
   <script>
     // 平滑 reveal 動畫：當區塊進入視窗時加入 .visible
     (function(){
@@ -189,6 +207,50 @@
             e.preventDefault();
           }
         });
+      });
+    })();
+    
+    // Lightbox: 點擊專案圖片放大顯示
+    (function(){
+      const lightbox = document.getElementById('lightbox');
+      const lbImg = document.getElementById('lightbox-img');
+      const lbCaption = document.getElementById('lightbox-caption');
+      const lbClose = document.querySelector('.lightbox-close');
+
+      function openLightbox(src, alt){
+        lbImg.src = src;
+        lbImg.alt = alt || '';
+        lbCaption.textContent = alt || '';
+        lightbox.classList.add('open');
+        lightbox.setAttribute('aria-hidden','false');
+        document.body.style.overflow = 'hidden';
+        lbClose.focus();
+      }
+
+      function closeLightbox(){
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden','true');
+        lbImg.src = '';
+        lbCaption.textContent = '';
+        document.body.style.overflow = '';
+      }
+
+      // click on project images
+      document.querySelectorAll('.project img').forEach(img=>{
+        img.addEventListener('click', (e)=>{
+          const src = img.getAttribute('src');
+          const alt = img.getAttribute('alt') || img.dataset.caption || '';
+          openLightbox(src, alt);
+        });
+      });
+
+      // close handlers
+      lbClose.addEventListener('click', closeLightbox);
+      lightbox.addEventListener('click', (e)=>{
+        if(e.target === lightbox) closeLightbox();
+      });
+      document.addEventListener('keydown', (e)=>{
+        if(e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
       });
     })();
   </script>
